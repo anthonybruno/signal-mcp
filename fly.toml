@@ -1,0 +1,37 @@
+app = "tonybot-mcp-server"
+primary_region = "den"  # Denver, Colorado (US)
+
+[build]
+  dockerfile = "../../Dockerfile"
+  context = "../.."
+  target = "mcp-server"
+
+[env]
+  NODE_ENV = "production"
+  PORT = "3001"
+  MCP_TRANSPORT = "http"
+
+[http_service]
+  internal_port = 3001
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 1
+  max_machines_running = 1
+  processes = ["app"]
+
+  [[http_service.checks]]
+    grace_period = "10s"
+    interval = "30s"
+    method = "GET"
+    timeout = "5s"
+    path = "/health"
+
+[metrics]
+  port = 9091
+  path = "/metrics"
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 512 
