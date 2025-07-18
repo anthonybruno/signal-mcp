@@ -1,6 +1,5 @@
 import Parser from 'rss-parser';
 import { logger } from '@/utils/logger';
-import { PERSONAL_CONFIG } from '@/config/constants';
 import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 type ToolResponse = CallToolResult;
 import { BlogPost } from '@/types';
@@ -22,8 +21,8 @@ class BlogService {
 
   async getLatestPost(): Promise<BlogPost | null> {
     try {
-      // Use hard-coded RSS URL from constants
-      const rssUrl = PERSONAL_CONFIG.blogRssUrl;
+      // Use hard-coded RSS URL
+      const rssUrl = 'https://eastsycamore.com/rss.xml';
 
       logger.debug('Fetching latest blog post', { rssUrl });
 

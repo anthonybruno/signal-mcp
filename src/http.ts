@@ -3,7 +3,6 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
-import { SERVER_CONFIG, MCP_CONFIG } from '@/config/constants';
 import { logger } from '@/utils/logger';
 import { getCurrentSpotifyTrack } from '@/tools/spotify';
 import { getGitHubActivity } from '@/tools/github';
@@ -14,11 +13,11 @@ import { getProjectInfo } from '@/tools/projectInfo';
 dotenv.config();
 
 const app = express();
-const PORT = SERVER_CONFIG.port;
+const PORT = 3001;
 
 logger.info('Starting MCP HTTP server', {
-  name: SERVER_CONFIG.name,
-  version: SERVER_CONFIG.version,
+  name: 'signal-mcp-server',
+  version: '1.0.0',
   environment: 'production',
   port: PORT,
 });
@@ -26,7 +25,7 @@ logger.info('Starting MCP HTTP server', {
 // Middleware
 app.use(
   cors({
-    origin: SERVER_CONFIG.corsOrigin,
+    origin: '*',
     methods: ['GET', 'POST', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   }),
@@ -38,19 +37,19 @@ app.use(express.json({ limit: '10mb' }));
 app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
-    transport: SERVER_CONFIG.transport,
+    transport: 'http',
     timestamp: new Date().toISOString(),
-    name: SERVER_CONFIG.name,
-    version: SERVER_CONFIG.version,
+    name: 'signal-mcp-server',
+    version: '1.0.0',
   });
 });
 
 // Root endpoint
 app.get('/', (req, res) => {
   res.json({
-    name: MCP_CONFIG.serverName,
-    version: SERVER_CONFIG.version,
-    transport: SERVER_CONFIG.transport,
+    name: 'Signal MCP',
+    version: '1.0.0',
+    transport: 'http',
     endpoints: {
       health: '/health',
       mcp: '/mcp',
@@ -72,13 +71,13 @@ app.post('/mcp', async (req, res) => {
           jsonrpc: '2.0',
           id: request.id,
           result: {
-            protocolVersion: MCP_CONFIG.protocolVersion,
+            protocolVersion: '2024-11-05',
             capabilities: {
               tools: {},
             },
             serverInfo: {
-              name: SERVER_CONFIG.name,
-              version: SERVER_CONFIG.version,
+              name: 'signal-mcp-server',
+              version: '1.0.0',
             },
           },
         };

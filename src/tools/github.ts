@@ -1,6 +1,5 @@
 import axios from 'axios';
 import { getEnv } from '@/config/env';
-import { PERSONAL_CONFIG } from '@/config/constants';
 import { logger } from '@/utils/logger';
 import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 type ToolResponse = CallToolResult;
@@ -92,7 +91,7 @@ class GitHubService {
     // GitHub GraphQL query to get pinned repositories
     const query = `
       query {
-        user(login: "${PERSONAL_CONFIG.githubUsername}") {
+        user(login: "anthonybruno") {
           pinnedItems(first: 6, types: REPOSITORY) {
             nodes {
               ... on Repository {
@@ -151,7 +150,7 @@ class GitHubService {
     // GraphQL query to get comprehensive contribution data
     const query = `
       query {
-        user(login: "${PERSONAL_CONFIG.githubUsername}") {
+        user(login: "anthonybruno") {
           contributionsCollection(from: "${startDate.toISOString()}", to: "${endDate.toISOString()}") {
             totalCommitContributions
             totalIssueContributions
@@ -249,8 +248,8 @@ export async function getGitHubActivity(): Promise<ToolResponse> {
         {
           type: 'text',
           text: JSON.stringify({
-            username: PERSONAL_CONFIG.githubUsername,
-            profileUrl: `https://github.com/${PERSONAL_CONFIG.githubUsername}`,
+            username: 'anthonybruno',
+            profileUrl: 'https://github.com/anthonybruno',
             totalContributions,
             pinnedRepos: pinnedRepos.map((repo: GitHubRepository) => ({
               name: repo.name,
