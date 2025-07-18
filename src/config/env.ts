@@ -1,12 +1,18 @@
 import { z } from 'zod';
+import { SERVER_CONFIG } from './constants';
 
-// Minimal schema - only sensitive tokens
+// Schema including all required environment variables
 const envSchema = z.object({
   // API Keys (required)
   SPOTIFY_CLIENT_ID: z.string().min(1),
   SPOTIFY_CLIENT_SECRET: z.string().min(1),
   SPOTIFY_REFRESH_TOKEN: z.string().min(1),
-  GITHUB_TOKEN: z.string().min(1),
+  GH_TOKEN: z.string().min(1),
+
+  // Server configuration (optional with defaults)
+  MCP_SERVER_NAME: z.string().default(SERVER_CONFIG.name),
+  MCP_SERVER_VERSION: z.string().default(SERVER_CONFIG.version),
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;

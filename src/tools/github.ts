@@ -82,7 +82,7 @@ class GitHubService {
   private getHeaders() {
     const env = getEnv();
     return {
-      Authorization: `token ${env.GITHUB_TOKEN}`,
+      Authorization: `token ${env.GH_TOKEN}`,
       Accept: 'application/vnd.github.v3+json',
       'User-Agent': 'tonybot-mcp-server',
     };
