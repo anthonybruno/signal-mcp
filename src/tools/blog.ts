@@ -1,6 +1,6 @@
 import Parser from 'rss-parser';
 import { logger } from '@/utils/logger';
-import { getEnv } from '@/config/env';
+import { PERSONAL_CONFIG } from '@/config/constants';
 import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 type ToolResponse = CallToolResult;
 import { BlogPost } from '@/types';
@@ -22,8 +22,8 @@ class BlogService {
 
   async getLatestPost(): Promise<BlogPost | null> {
     try {
-      // Get RSS URL from environment configuration in the method
-      const rssUrl = getEnv().BLOG_RSS_URL;
+      // Use hard-coded RSS URL from constants
+      const rssUrl = PERSONAL_CONFIG.blogRssUrl;
 
       logger.debug('Fetching latest blog post', { rssUrl });
 

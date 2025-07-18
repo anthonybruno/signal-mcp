@@ -3,7 +3,7 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
-import { getEnv } from '@/config/env';
+import { SERVER_CONFIG, MCP_CONFIG } from '@/config/constants';
 import { logger } from '@/utils/logger';
 import { getCurrentSpotifyTrack } from '@/tools/spotify';
 import { getGitHubActivity } from '@/tools/github';
@@ -14,21 +14,19 @@ import { getProjectInfo } from '@/tools/projectInfo';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.MCP_PORT || 3001;
-
-const env = getEnv();
+const PORT = SERVER_CONFIG.port;
 
 logger.info('Starting MCP HTTP server', {
-  name: env.MCP_SERVER_NAME,
-  version: env.MCP_SERVER_VERSION,
-  environment: env.NODE_ENV,
+  name: SERVER_CONFIG.name,
+  version: SERVER_CONFIG.version,
+  environment: 'production',
   port: PORT,
 });
 
 // Middleware
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN || '*',
+    origin: SERVER_CONFIG.corsOrigin,
     methods: ['GET', 'POST', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   }),
@@ -40,19 +38,19 @@ app.use(express.json({ limit: '10mb' }));
 app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
-    transport: 'http',
+    transport: SERVER_CONFIG.transport,
     timestamp: new Date().toISOString(),
-    name: env.MCP_SERVER_NAME,
-    version: env.MCP_SERVER_VERSION,
+    name: SERVER_CONFIG.name,
+    version: SERVER_CONFIG.version,
   });
 });
 
 // Root endpoint
 app.get('/', (req, res) => {
   res.json({
-    name: 'TonyBot MCP Server',
-    version: env.MCP_SERVER_VERSION,
-    transport: 'http',
+    name: MCP_CONFIG.serverName,
+    version: SERVER_CONFIG.version,
+    transport: SERVER_CONFIG.transport,
     endpoints: {
       health: '/health',
       mcp: '/mcp',
@@ -74,13 +72,13 @@ app.post('/mcp', async (req, res) => {
           jsonrpc: '2.0',
           id: request.id,
           result: {
-            protocolVersion: '2024-11-05',
+            protocolVersion: MCP_CONFIG.protocolVersion,
             capabilities: {
               tools: {},
             },
             serverInfo: {
-              name: env.MCP_SERVER_NAME,
-              version: env.MCP_SERVER_VERSION,
+              name: SERVER_CONFIG.name,
+              version: SERVER_CONFIG.version,
             },
           },
         };
@@ -159,7 +157,7 @@ app.post('/mcp', async (req, res) => {
     logger.error('Error processing MCP request:', error);
     res.status(500).json({
       jsonrpc: '2.0',
-      id: req.body.id || null,
+      id: req.body.id ?? null,
       error: {
         code: -32603,
         message: 'Internal error',
@@ -171,8 +169,7 @@ app.post('/mcp', async (req, res) => {
 
 // Start the server
 const server = app.listen(PORT, () => {
-  logger.info(`🚀 MCP HTTP server running on port ${PORT}`);
-  logger.info(`📋 Environment: ${env.NODE_ENV}`);
+  logger.info(`MCP HTTP server running on port ${PORT}`);
 });
 
 // Graceful shutdown

@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { getEnv } from '@/config/env';
+import { PERSONAL_CONFIG } from '@/config/constants';
 import { logger } from '@/utils/logger';
 import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 type ToolResponse = CallToolResult;
@@ -88,11 +89,10 @@ class GitHubService {
   }
 
   async getPinnedRepositories(): Promise<GitHubRepository[]> {
-    const env = getEnv();
     // GitHub GraphQL query to get pinned repositories
     const query = `
       query {
-        user(login: "${env.GITHUB_USERNAME}") {
+        user(login: "${PERSONAL_CONFIG.githubUsername}") {
           pinnedItems(first: 6, types: REPOSITORY) {
             nodes {
               ... on Repository {
@@ -145,14 +145,13 @@ class GitHubService {
   }
 
   async getContributions(days: number = 365): Promise<GitHubContributionsCollection> {
-    const env = getEnv();
     const endDate = new Date();
     const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
     // GraphQL query to get comprehensive contribution data
     const query = `
       query {
-        user(login: "${env.GITHUB_USERNAME}") {
+        user(login: "${PERSONAL_CONFIG.githubUsername}") {
           contributionsCollection(from: "${startDate.toISOString()}", to: "${endDate.toISOString()}") {
             totalCommitContributions
             totalIssueContributions
@@ -232,8 +231,6 @@ const githubService = new GitHubService();
 
 export async function getGitHubActivity(): Promise<ToolResponse> {
   try {
-    const env = getEnv();
-
     const [pinnedRepos, contributions] = await Promise.all([
       githubService.getPinnedRepositories(),
       githubService.getContributions(365),
@@ -252,8 +249,8 @@ export async function getGitHubActivity(): Promise<ToolResponse> {
         {
           type: 'text',
           text: JSON.stringify({
-            username: env.GITHUB_USERNAME,
-            profileUrl: `https://github.com/${env.GITHUB_USERNAME}`,
+            username: PERSONAL_CONFIG.githubUsername,
+            profileUrl: `https://github.com/${PERSONAL_CONFIG.githubUsername}`,
             totalContributions,
             pinnedRepos: pinnedRepos.map((repo: GitHubRepository) => ({
               name: repo.name,

@@ -1,5 +1,5 @@
 # =============================================================================
-# TonyBot MCP Server - Optimized Production Dockerfile
+# Optimized MCP server - minimal dependencies
 # =============================================================================
 
 # Build stage
@@ -7,50 +7,47 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files for dependency installation
+# Copy package files
 COPY package.json package-lock.json* ./
-COPY packages/mcp-server/package.json ./packages/mcp-server/
 
-# Install all dependencies (including dev dependencies for building)
+# Install ALL dependencies
 RUN npm ci
 
-# Copy source code
-COPY packages/mcp-server ./packages/mcp-server
-
-# Build the application with proper path resolution
-WORKDIR /app/packages/mcp-server
-RUN npm run build
-
-# Verify build output
-RUN ls -la dist/
+# Copy source
+COPY . .
 
 # Production stage
 FROM node:20-alpine AS production
 
 WORKDIR /app
 
-# Create non-root user
-RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 nodeuser
-
-# Copy package files
-COPY --from=builder /app/packages/mcp-server/package.json ./package.json
-COPY --from=builder /app/package-lock.json ./package-lock.json
-
-# Install only production dependencies
-RUN npm ci --omit=dev
-
-# Copy built application
-COPY --from=builder --chown=nodeuser:nodejs /app/packages/mcp-server/dist ./dist
-
-# Verify the built files
-RUN ls -la dist/
-
-USER nodeuser
-
-EXPOSE 3001
 ENV NODE_ENV=production
 ENV PORT=3001
 ENV MCP_TRANSPORT=http
 
-CMD ["node", "dist/http.js"]
+# Create user
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nodejs
+
+# Copy package files
+COPY package.json package-lock.json* ./
+
+# Install ONLY production dependencies
+RUN npm ci --only=production && \
+    npm cache clean --force && \
+    rm -rf /root/.npm /tmp/*
+
+# Copy source files
+COPY --from=builder --chown=nodejs:nodejs /app/src ./src
+COPY --from=builder --chown=nodejs:nodejs /app/scripts ./scripts
+
+USER nodejs
+
+EXPOSE 3001
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3001/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
+
+# Use node directly instead of tsx
+CMD ["node", "--loader", "tsx/esm", "src/http.ts"]
