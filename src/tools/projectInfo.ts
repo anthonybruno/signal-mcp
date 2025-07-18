@@ -9,9 +9,9 @@ export async function getProjectInfo(): Promise<ToolResponse> {
       {
         type: 'text',
         text: JSON.stringify({
-          name: 'TonyBot - AI Portfolio Chatbot',
+          name: 'Signal - AI Portfolio Chatbot',
           description:
-            'TonyBot is an AI-powered portfolio chatbot that showcases my ability to architect, lead, and deliver modern, production-grade systems. It drives personalized, context-aware conversations by combining live data integrations, advanced AI, and a robust RAG and MCP backend.\n\nBuilt for clarity, scale, and real-world use, TonyBot reflects my commitment to secure, maintainable software and the leadership mindset I bring to every team I support.',
+            'Signal is an AI-powered portfolio chatbot that showcases my ability to architect, lead, and deliver modern, production-grade systems. It drives personalized, context-aware conversations by combining live data integrations, advanced AI, and a robust RAG and MCP backend.\n\nBuilt for clarity, scale, and real-world use, TonyBot reflects my commitment to secure, maintainable software and the leadership mindset I bring to every team I support.',
           technologies: [
             '**Frontend:** Next.js with React for the chat interface, styled with Tailwind and written in TypeScript',
             '**Backend:** Express.js with ChromaDB for Retrieval-Augmented Generation (RAG) using OpenAI embeddings and semantic search',
