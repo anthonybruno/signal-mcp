@@ -7,7 +7,6 @@
   "scripts": {
     "dev": "tsx src/index.ts",
     "dev:http": "tsx src/http.ts",
-    "build": "tsc",
     "start": "tsx src/index.ts",
     "start:http": "tsx src/http.ts",
     "type-check": "tsc --noEmit",

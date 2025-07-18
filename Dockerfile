@@ -1,19 +1,13 @@
-# Build stage
-FROM node:20-alpine AS builder
+# Build stage to install dependencies
+FROM node:20-alpine AS deps
 
 WORKDIR /app
 
 # Copy package files
 COPY package.json package-lock.json* ./
 
-# Install ALL dependencies (including dev dependencies for building)
+# Install ALL dependencies
 RUN npm ci
-
-# Copy source
-COPY . .
-
-# Build the TypeScript to JavaScript
-RUN npm run build
 
 # Production stage
 FROM node:20-alpine AS production
@@ -31,13 +25,15 @@ RUN addgroup --system --gid 1001 nodejs && \
 # Copy package files
 COPY package.json package-lock.json* ./
 
-# Install ONLY production dependencies
+# Install ONLY production dependencies + tsx
 RUN npm ci --only=production && \
+    npm install tsx && \
     npm cache clean --force && \
     rm -rf /root/.npm /tmp/*
 
-# Copy compiled JavaScript from builder stage
-COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
+# Copy source code (but exclude unnecessary files)
+COPY --chown=nodejs:nodejs src ./src
+COPY --chown=nodejs:nodejs tsconfig.json ./
 
 USER nodejs
 
@@ -47,5 +43,5 @@ EXPOSE 3001
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3001/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
 
-# Run the compiled JavaScript
-CMD ["node", "dist/http.js"]
+# Run TypeScript directly with tsx
+CMD ["npx", "tsx", "src/http.ts"]
