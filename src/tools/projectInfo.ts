@@ -1,10 +1,8 @@
-// Returns static project info for the assistant
-
-import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
+import type { CallToolResult } from '@modelcontextprotocol/sdk/types';
 type ToolResponse = CallToolResult;
 
-export async function getProjectInfo(): Promise<ToolResponse> {
-  return {
+export function getProjectInfo(): Promise<ToolResponse> {
+  return Promise.resolve({
     content: [
       {
         type: 'text',
@@ -24,5 +22,5 @@ export async function getProjectInfo(): Promise<ToolResponse> {
         }),
       },
     ],
-  };
+  });
 }

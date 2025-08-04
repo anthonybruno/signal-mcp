@@ -1,5 +1,7 @@
-import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import type { Server } from '@modelcontextprotocol/sdk/server/index.js';
+
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
+
 import { logger } from '@/utils/logger';
 
 // Tool parameter schemas (for validation)
@@ -20,10 +22,10 @@ const BlogToolParams = {
   properties: {},
   required: [],
 } as const;
-import { getGitHubActivity } from './github';
-import { getCurrentSpotifyTrack } from './spotify';
 import { getLatestBlogPost } from './blog';
+import { getGitHubActivity } from './github';
 import { getProjectInfo } from './projectInfo';
+import { getCurrentSpotifyTrack } from './spotify';
 
 export async function registerTools(server: Server): Promise<void> {
   // Register list_tools handler
@@ -64,17 +66,17 @@ export async function registerTools(server: Server): Promise<void> {
 
     try {
       switch (name) {
-        case 'get_current_spotify_track':
-          return await getCurrentSpotifyTrack();
-        case 'get_github_activity':
-          return await getGitHubActivity();
-        case 'get_latest_blog_post':
-          return await getLatestBlogPost();
-        case 'get_project_info':
-          return await getProjectInfo();
+      case 'get_current_spotify_track':
+        return await getCurrentSpotifyTrack();
+      case 'get_github_activity':
+        return await getGitHubActivity();
+      case 'get_latest_blog_post':
+        return await getLatestBlogPost();
+      case 'get_project_info':
+        return await getProjectInfo();
 
-        default:
-          throw new Error(`Unknown tool: ${name}`);
+      default:
+        throw new Error(`Unknown tool: ${name}`);
       }
     } catch (error) {
       logger.error(`Tool execution failed: ${name}`, error);

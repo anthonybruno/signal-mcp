@@ -34,10 +34,9 @@
     "@types/date-fns": "^2.5.3",
     "@types/express": "^4.17.21",
     "@types/node": "^20.0.0",
-    "@typescript-eslint/eslint-plugin": "^8.37.0",
-    "@typescript-eslint/parser": "^8.37.0",
-    "eslint": "^8.0.0",
-    "eslint-config-prettier": "^10.1.5",
+    "abruno-dev-config": "^1.0.5",
+    "eslint": "^9.32.0",
+    "eslint-plugin-node": "^11.1.0",
     "prettier": "^3.0.0",
     "tsx": "^4.20.3"
   }

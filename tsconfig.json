@@ -18,10 +18,7 @@
     "sourceMap": true,
     "noEmit": false,
     "paths": {
-      "@/*": ["*"],
-      "@/tools/*": ["tools/*"],
-      "@/utils/*": ["utils/*"],
-      "@/config/*": ["config/*"]
+      "@/*": ["*"]
     }
   },
   "include": ["src/**/*"],

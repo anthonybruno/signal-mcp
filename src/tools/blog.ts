@@ -1,8 +1,11 @@
 import Parser from 'rss-parser';
+
+import type { BlogPost } from '@/types';
 import { logger } from '@/utils/logger';
-import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
+
+import type { CallToolResult } from '@modelcontextprotocol/sdk/types';
+
 type ToolResponse = CallToolResult;
-import { BlogPost } from '@/types';
 
 class BlogService {
   private parser: Parser;
@@ -28,13 +31,13 @@ class BlogService {
 
       const feed = await this.parser.parseURL(rssUrl);
 
-      if (!feed.items || feed.items.length === 0) {
+      if (feed.items.length === 0) {
         logger.warn('No blog posts found in RSS feed');
         return null;
       }
 
-      // Get the most recent post (first item in the feed)
-      const item = feed.items[0];
+      // Get the most recent post (first item in the feed) using array destructuring
+      const [item] = feed.items;
 
       const post: BlogPost = {
         title: item.title ?? 'Untitled',

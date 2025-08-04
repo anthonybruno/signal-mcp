@@ -1,9 +1,11 @@
+import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
+
 import axios from 'axios';
+
 import { getEnv } from '@/config/env';
 import { logger } from '@/utils/logger';
-import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 type ToolResponse = CallToolResult;
-import { SpotifyTrack } from '@/types';
+import type { SpotifyTrack } from '@/types';
 
 interface SpotifyArtist {
   name: string;
@@ -27,7 +29,7 @@ interface SpotifyRecentlyPlayedResponse {
 
 class SpotifyService {
   private accessToken: string | null = null;
-  private tokenExpiry: number = 0;
+  private tokenExpiry = 0;
 
   private async refreshAccessToken(): Promise<string> {
     const env = getEnv();
@@ -93,7 +95,7 @@ class SpotifyService {
       }
 
       const played = items[0];
-      const track = played.track;
+      const { track } = played;
 
       return {
         name: track.name,

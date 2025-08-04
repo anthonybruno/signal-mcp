@@ -17,6 +17,8 @@ const envSchema = z.object({
 export type EnvConfig = z.infer<typeof envSchema>;
 
 // Simple getter - no caching, no complex logic
+
 export function getEnv(): EnvConfig {
+  // eslint-disable-next-line no-process-env
   return envSchema.parse(process.env);
 }
