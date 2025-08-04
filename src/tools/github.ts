@@ -1,260 +1,76 @@
 import axios from 'axios';
+
 import { getEnv } from '@/config/env';
 import { logger } from '@/utils/logger';
-import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
+
+import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 type ToolResponse = CallToolResult;
+
+interface GitHubUser {
+  login: string;
+  html_url: string;
+  public_repos: number;
+  followers: number;
+  bio?: string;
+  name?: string;
+  company?: string;
+  location?: string;
+  blog?: string;
+}
 
 interface GitHubRepository {
   name: string;
   description?: string;
-  primaryLanguage?: {
-    name: string;
-    color: string;
+  html_url: string;
+  language?: string;
+  stargazers_count: number;
+  forks_count: number;
+  homepage?: string;
+  topics: string[];
+  updated_at: string;
+}
+
+async function fetchGitHubData() {
+  const headers = {
+    Authorization: `token ${getEnv().GH_TOKEN}`,
+    Accept: 'application/vnd.github.v3+json',
   };
-  stargazerCount: number;
-  forkCount: number;
-  url: string;
-  homepageUrl?: string;
-  updatedAt: string;
-  repositoryTopics?: {
-    nodes: Array<{
-      topic: {
-        name: string;
-      };
-    }>;
+
+  const [userResponse, reposResponse] = await Promise.all([
+    axios.get<GitHubUser>('https://api.github.com/users/anthonybruno', { headers }),
+    axios.get<GitHubRepository[]>(
+      'https://api.github.com/users/anthonybruno/repos?sort=updated&per_page=6',
+      { headers },
+    ),
+  ]);
+
+  return {
+    user: userResponse.data,
+    repos: reposResponse.data,
   };
 }
-
-interface GitHubContributionsCollection {
-  totalCommitContributions: number;
-  totalIssueContributions: number;
-  totalPullRequestContributions: number;
-  totalPullRequestReviewContributions: number;
-  totalRepositoryContributions: number;
-  commitContributionsByRepository: Array<{
-    repository: {
-      name: string;
-      url: string;
-      isPrivate: boolean;
-    };
-    contributions: {
-      totalCount: number;
-    };
-  }>;
-  issueContributionsByRepository: Array<{
-    repository: {
-      name: string;
-      url: string;
-      isPrivate: boolean;
-    };
-    contributions: {
-      totalCount: number;
-    };
-  }>;
-  pullRequestContributionsByRepository: Array<{
-    repository: {
-      name: string;
-      url: string;
-      isPrivate: boolean;
-    };
-    contributions: {
-      totalCount: number;
-    };
-  }>;
-  pullRequestReviewContributionsByRepository: Array<{
-    repository: {
-      name: string;
-      url: string;
-      isPrivate: boolean;
-    };
-    contributions: {
-      totalCount: number;
-    };
-  }>;
-}
-
-interface GitHubGraphQLError {
-  message: string;
-}
-
-class GitHubService {
-  private getHeaders() {
-    const env = getEnv();
-    return {
-      Authorization: `token ${env.GH_TOKEN}`,
-      Accept: 'application/vnd.github.v3+json',
-      'User-Agent': 'tonybot-mcp-server',
-    };
-  }
-
-  async getPinnedRepositories(): Promise<GitHubRepository[]> {
-    // GitHub GraphQL query to get pinned repositories
-    const query = `
-      query {
-        user(login: "anthonybruno") {
-          pinnedItems(first: 6, types: REPOSITORY) {
-            nodes {
-              ... on Repository {
-                name
-                description
-                primaryLanguage {
-                  name
-                  color
-                }
-                stargazerCount
-                forkCount
-                url
-                homepageUrl
-                updatedAt
-                repositoryTopics(first: 5) {
-                  nodes {
-                    topic {
-                      name
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    `;
-
-    try {
-      const response = await axios.post(
-        'https://api.github.com/graphql',
-        { query },
-        {
-          headers: { ...this.getHeaders(), 'Content-Type': 'application/json' },
-        },
-      );
-
-      if (response.data.errors) {
-        logger.error('GraphQL errors:', response.data.errors);
-        throw new Error(
-          `GraphQL errors: ${response.data.errors.map((e: GitHubGraphQLError) => e.message).join(', ')}`,
-        );
-      }
-
-      return response.data.data.user.pinnedItems.nodes;
-    } catch (error) {
-      logger.error('GraphQL request failed:', error);
-      throw error;
-    }
-  }
-
-  async getContributions(days: number = 365): Promise<GitHubContributionsCollection> {
-    const endDate = new Date();
-    const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
-
-    // GraphQL query to get comprehensive contribution data
-    const query = `
-      query {
-        user(login: "anthonybruno") {
-          contributionsCollection(from: "${startDate.toISOString()}", to: "${endDate.toISOString()}") {
-            totalCommitContributions
-            totalIssueContributions
-            totalPullRequestContributions
-            totalPullRequestReviewContributions
-            totalRepositoryContributions
-            commitContributionsByRepository(maxRepositories: 10) {
-              repository {
-                name
-                url
-                isPrivate
-              }
-              contributions {
-                totalCount
-              }
-            }
-            issueContributionsByRepository(maxRepositories: 10) {
-              repository {
-                name
-                url
-                isPrivate
-              }
-              contributions {
-                totalCount
-              }
-            }
-            pullRequestContributionsByRepository(maxRepositories: 10) {
-              repository {
-                name
-                url
-                isPrivate
-              }
-              contributions {
-                totalCount
-              }
-            }
-            pullRequestReviewContributionsByRepository(maxRepositories: 10) {
-              repository {
-                name
-                url
-                isPrivate
-              }
-              contributions {
-                totalCount
-              }
-            }
-          }
-        }
-      }
-    `;
-
-    try {
-      const response = await axios.post(
-        'https://api.github.com/graphql',
-        { query },
-        {
-          headers: { ...this.getHeaders(), 'Content-Type': 'application/json' },
-        },
-      );
-
-      if (response.data.errors) {
-        logger.error('GraphQL errors:', response.data.errors);
-        throw new Error(
-          `GraphQL errors: ${response.data.errors.map((e: GitHubGraphQLError) => e.message).join(', ')}`,
-        );
-      }
-
-      return response.data.data.user.contributionsCollection;
-    } catch (error) {
-      logger.error('GraphQL contributions request failed:', error);
-      throw error;
-    }
-  }
-}
-
-const githubService = new GitHubService();
 
 export async function getGitHubActivity(): Promise<ToolResponse> {
   try {
-    const [pinnedRepos, contributions] = await Promise.all([
-      githubService.getPinnedRepositories(),
-      githubService.getContributions(365),
-    ]);
-
-    // Calculate total contributions from all sources
-    const totalContributions =
-      contributions.totalCommitContributions +
-      contributions.totalIssueContributions +
-      contributions.totalPullRequestContributions +
-      contributions.totalPullRequestReviewContributions +
-      contributions.totalRepositoryContributions;
+    const { user, repos } = await fetchGitHubData();
 
     return {
       content: [
         {
           type: 'text',
           text: JSON.stringify({
-            username: 'anthonybruno',
-            profileUrl: 'https://github.com/anthonybruno',
-            totalContributions,
-            pinnedRepos: pinnedRepos.map((repo: GitHubRepository) => ({
+            username: user.login,
+            profileUrl: user.html_url,
+            publicRepos: user.public_repos,
+            followers: user.followers,
+            bio: user.bio,
+            topRepos: repos.map((repo) => ({
               name: repo.name,
               description: repo.description,
-              url: repo.url,
+              url: repo.html_url,
+              language: repo.language,
+              stars: repo.stargazers_count,
+              topics: repo.topics,
             })),
           }),
         },
