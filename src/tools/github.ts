@@ -5,18 +5,6 @@ import { logger } from '@/utils/logger';
 
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 
-interface GitHubUser {
-  login: string;
-  html_url: string;
-  public_repos: number;
-  followers: number;
-  bio?: string;
-  name?: string;
-  company?: string;
-  location?: string;
-  blog?: string;
-}
-
 interface GitHubRepository {
   name: string;
   description?: string;
@@ -29,49 +17,82 @@ interface GitHubRepository {
   updated_at: string;
 }
 
-/**
- * Fetches user profile and repository data from GitHub API.
- *
- * Makes parallel requests to get both user profile information and recent repositories.
- * Uses GitHub's REST API v3 with proper authentication headers.
- *
- * @returns Promise<{user: GitHubUser, repos: GitHubRepository[]}> - User and repository data
- * @throws Error if API requests fail
- */
-async function fetchGitHubData() {
-  const headers = {
-    Authorization: `token ${getEnv().GH_TOKEN}`,
-    Accept: 'application/vnd.github.v3+json',
-  };
+interface PinnedItem {
+  name: string;
+  description?: string;
+  htmlUrl: string;
+}
 
-  const [userResponse, reposResponse] = await Promise.all([
-    axios.get<GitHubUser>('https://api.github.com/users/anthonybruno', { headers }),
-    axios.get<GitHubRepository[]>(
-      'https://api.github.com/users/anthonybruno/repos?sort=updated&per_page=6',
-      { headers },
-    ),
-  ]);
+function createHeaders() {
+  return {
+    Authorization: `token ${getEnv().GH_TOKEN}`,
+    'Content-Type': 'application/json',
+  };
+}
+
+const GITHUB_QUERY = `
+  query {
+    user(login: "anthonybruno") {
+      contributionsCollection {
+        totalContributions
+      }
+      pinnedItems(first: 6, types: REPOSITORY) {
+        nodes {
+          ... on Repository {
+            name
+            description
+            htmlUrl
+          }
+        }
+      }
+    }
+  }
+`;
+
+function transformPinnedItems(nodes: (PinnedItem | null)[]): GitHubRepository[] {
+  return nodes
+    .filter((node): node is PinnedItem => node !== null)
+    .map((repo) => ({
+      name: repo.name,
+      description: repo.description,
+      html_url: repo.htmlUrl,
+      language: undefined,
+      stargazers_count: 0,
+      forks_count: 0,
+      homepage: undefined,
+      topics: [],
+      updated_at: new Date().toISOString(),
+    }));
+}
+
+async function fetchGitHubData() {
+  const response = await axios.post(
+    'https://api.github.com/graphql',
+    { query: GITHUB_QUERY },
+    { headers: createHeaders() },
+  );
+
+  const userData = response.data.data?.user;
+  if (!userData) {
+    throw new Error('Failed to fetch GitHub data');
+  }
 
   return {
-    user: userResponse.data,
-    repos: reposResponse.data,
+    user: {
+      login: 'anthonybruno',
+      html_url: 'https://github.com/anthonybruno',
+    },
+    repos: transformPinnedItems(userData.pinnedItems.nodes),
+    contributions: userData.contributionsCollection?.totalContributions || 0,
   };
 }
 
 /**
- * Retrieves GitHub activity and profile information.
- *
- * This tool integrates with GitHub's REST API to fetch user profile data and recent
- * repositories. It provides a comprehensive view of GitHub activity including follower
- * count, repository statistics, and project details.
- *
- * @returns Promise<CallToolResult> - JSON response containing profile and repository data
- * @example
- * // Returns: { username: "anthonybruno", followers: 42, topRepos: [...], ... }
+ * Fetches GitHub activity including contributions and pinned repositories
  */
 export async function getGitHubActivity(): Promise<CallToolResult> {
   try {
-    const { user, repos } = await fetchGitHubData();
+    const { user, repos, contributions } = await fetchGitHubData();
 
     return {
       content: [
@@ -80,16 +101,13 @@ export async function getGitHubActivity(): Promise<CallToolResult> {
           text: JSON.stringify({
             username: user.login,
             profileUrl: user.html_url,
-            publicRepos: user.public_repos,
-            followers: user.followers,
-            bio: user.bio,
-            topRepos: repos.map((repo) => ({
+            totalContributions: contributions,
+            pinnedRepos: repos.map((repo) => ({
               name: repo.name,
               description: repo.description,
               url: repo.html_url,
               language: repo.language,
               stars: repo.stargazers_count,
-              topics: repo.topics,
             })),
           }),
         },
