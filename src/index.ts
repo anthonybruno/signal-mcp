@@ -1,12 +1,12 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import dotenv from 'dotenv';
 
 import { getEnv } from '@/config/env';
 import { registerTools } from '@/tools/index';
 import { logger } from '@/utils/logger';
-
-dotenv.config();
 
 /**
  * MCP Stdio Server - For Local Development

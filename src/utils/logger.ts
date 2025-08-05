@@ -1,10 +1,10 @@
 import winston from 'winston';
 
-import { getEnv } from '@/config/env';
+// eslint-disable-next-line no-process-env
+const logLevel = process.env.LOG_LEVEL || 'info';
 
-const env = getEnv();
 const logger = winston.createLogger({
-  level: env.LOG_LEVEL,
+  level: logLevel,
   format: winston.format.combine(
     winston.format.timestamp(),
     winston.format.errors({ stack: true }),

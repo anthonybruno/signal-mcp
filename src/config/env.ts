@@ -14,8 +14,6 @@ const envSchema = z.object({
     .string()
     .default('3001')
     .transform((val) => parseInt(val, 10)),
-
-  LOG_LEVEL: z.enum(['error', 'warn', 'info', 'debug']).default('info'),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;
