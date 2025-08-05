@@ -4,7 +4,6 @@ import { getEnv } from '@/config/env';
 import { logger } from '@/utils/logger';
 
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
-type ToolResponse = CallToolResult;
 
 interface GitHubUser {
   login: string;
@@ -30,6 +29,15 @@ interface GitHubRepository {
   updated_at: string;
 }
 
+/**
+ * Fetches user profile and repository data from GitHub API.
+ *
+ * Makes parallel requests to get both user profile information and recent repositories.
+ * Uses GitHub's REST API v3 with proper authentication headers.
+ *
+ * @returns Promise<{user: GitHubUser, repos: GitHubRepository[]}> - User and repository data
+ * @throws Error if API requests fail
+ */
 async function fetchGitHubData() {
   const headers = {
     Authorization: `token ${getEnv().GH_TOKEN}`,
@@ -50,7 +58,18 @@ async function fetchGitHubData() {
   };
 }
 
-export async function getGitHubActivity(): Promise<ToolResponse> {
+/**
+ * Retrieves GitHub activity and profile information.
+ *
+ * This tool integrates with GitHub's REST API to fetch user profile data and recent
+ * repositories. It provides a comprehensive view of GitHub activity including follower
+ * count, repository statistics, and project details.
+ *
+ * @returns Promise<CallToolResult> - JSON response containing profile and repository data
+ * @example
+ * // Returns: { username: "anthonybruno", followers: 42, topRepos: [...], ... }
+ */
+export async function getGitHubActivity(): Promise<CallToolResult> {
   try {
     const { user, repos } = await fetchGitHubData();
 
@@ -77,14 +96,12 @@ export async function getGitHubActivity(): Promise<ToolResponse> {
       ],
     };
   } catch (error) {
-    logger.error('GitHub tool error:', error);
+    logger.error('Failed to fetch GitHub data:', error);
     return {
       content: [
         {
           type: 'text',
-          text: JSON.stringify({
-            error: 'Sorry, I encountered an error while trying to get your GitHub activity.',
-          }),
+          text: JSON.stringify({ error: 'Failed to get GitHub activity' }),
         },
       ],
     };

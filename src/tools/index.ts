@@ -2,45 +2,18 @@ import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprot
 
 import { logger } from '@/utils/logger';
 
-import { getLatestBlogPost } from './blog';
-import { getGitHubActivity } from './github';
-import { getProjectInfo } from './projectInfo';
-import { getCurrentSpotifyTrack } from './spotify';
+import { handlers, tools } from './definitions';
 
 import type { Server } from '@modelcontextprotocol/sdk/server/index.js';
 
-const emptySchema = { type: 'object', properties: {}, required: [] };
-
-const tools = [
-  {
-    name: 'get_current_spotify_track',
-    description: "Get the currently playing track from Anthony Bruno's Spotify account",
-    inputSchema: emptySchema,
-  },
-  {
-    name: 'get_github_activity',
-    description: 'Get recent GitHub activity and profile information',
-    inputSchema: emptySchema,
-  },
-  {
-    name: 'get_latest_blog_post',
-    description: "Get the latest blog post from Anthony Bruno's blog",
-    inputSchema: emptySchema,
-  },
-  {
-    name: 'get_project_info',
-    description: 'Get information about this project',
-    inputSchema: {},
-  },
-];
-
-const handlers = {
-  get_current_spotify_track: getCurrentSpotifyTrack,
-  get_github_activity: getGitHubActivity,
-  get_latest_blog_post: getLatestBlogPost,
-  get_project_info: getProjectInfo,
-};
-
+/**
+ * Registers all available tools with the MCP server.
+ *
+ * Sets up request handlers for listing tools and executing them dynamically.
+ * Provides centralized error handling and logging for all tool operations.
+ *
+ * @param server - The MCP server instance to register tools with
+ */
 export function registerTools(server: Server): void {
   server.setRequestHandler(ListToolsRequestSchema, () => ({ tools }));
 
@@ -49,15 +22,30 @@ export function registerTools(server: Server): void {
     logger.info('Tool called', { name });
 
     try {
-      const handler = handlers[name as keyof typeof handlers];
-      return await handler();
+      if (!(name in handlers)) {
+        logger.error('Unknown tool requested', { toolName: name });
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify({ error: `Unknown tool: ${name}` }),
+            },
+          ],
+          isError: true,
+        };
+      }
+
+      const handler = handlers[name];
+      const result = await handler();
+      logger.info('Tool execution completed', { toolName: name });
+      return result;
     } catch (error) {
       logger.error(`Tool execution failed: ${name}`, error);
       return {
         content: [
           {
             type: 'text',
-            text: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            text: JSON.stringify({ error: 'Tool execution failed' }),
           },
         ],
         isError: true,

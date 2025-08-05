@@ -1,78 +1,82 @@
 import Parser from 'rss-parser';
 
-import type { BlogPost } from '@/types';
 import { logger } from '@/utils/logger';
 
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types';
 
-type ToolResponse = CallToolResult;
+interface BlogPost {
+  title: string;
+  link: string;
+  publishedAt: string;
+}
 
-class BlogService {
-  private parser: Parser;
+const RSS_URL = 'https://eastsycamore.com/rss.xml';
 
-  constructor() {
-    this.parser = new Parser({
-      customFields: {
-        item: [
-          ['content:encoded', 'contentEncoded'],
-          ['dc:creator', 'creator'],
-          ['category', 'categories'],
-        ],
-      },
-    });
-  }
+const parser = new Parser({
+  customFields: {
+    item: [
+      ['content:encoded', 'contentEncoded'],
+      ['dc:creator', 'creator'],
+      ['category', 'categories'],
+    ],
+  },
+});
 
-  async getLatestPost(): Promise<BlogPost | null> {
-    try {
-      // Use hard-coded RSS URL
-      const rssUrl = 'https://eastsycamore.com/rss.xml';
+/**
+ * Fetches the latest blog post from the RSS feed.
+ *
+ * Parses the RSS feed to extract the most recent blog post. Handles missing
+ * data gracefully by providing fallback values for title and publication date.
+ *
+ * @returns Promise<BlogPost | null> - The latest blog post or null if none found
+ * @throws Error if RSS feed cannot be fetched or parsed
+ */
+async function fetchLatestBlogPost(): Promise<BlogPost | null> {
+  try {
+    logger.debug('Fetching latest blog post', { url: RSS_URL });
+    const feed = await parser.parseURL(RSS_URL);
 
-      logger.debug('Fetching latest blog post', { rssUrl });
-
-      const feed = await this.parser.parseURL(rssUrl);
-
-      if (feed.items.length === 0) {
-        logger.warn('No blog posts found in RSS feed');
-        return null;
-      }
-
-      // Get the most recent post (first item in the feed) using array destructuring
-      const [item] = feed.items;
-
-      const post: BlogPost = {
-        title: item.title ?? 'Untitled',
-        link: item.link ?? '',
-        publishedAt: item.pubDate ? new Date(item.pubDate).toISOString() : new Date().toISOString(),
-      };
-
-      logger.debug('Successfully fetched latest blog post', {
-        title: post.title,
-        publishedAt: post.publishedAt,
-      });
-      return post;
-    } catch (error) {
-      logger.error('Failed to fetch blog post:', error);
-      throw new Error('Failed to fetch blog post from RSS feed');
+    if (!feed.items.length) {
+      logger.warn('No blog posts found in RSS feed');
+      return null;
     }
+
+    const [latestPost] = feed.items;
+    const post: BlogPost = {
+      title: latestPost.title ?? 'Untitled',
+      link: latestPost.link ?? '',
+      publishedAt: latestPost.pubDate
+        ? new Date(latestPost.pubDate).toISOString()
+        : new Date().toISOString(),
+    };
+
+    logger.debug('Successfully fetched latest blog post', {
+      title: post.title,
+      publishedAt: post.publishedAt,
+    });
+    return post;
+  } catch (error) {
+    logger.error('Failed to fetch blog post:', error);
+    throw new Error('Failed to fetch blog post from RSS feed');
   }
 }
 
-const blogService = new BlogService();
-
-export async function getLatestBlogPost(): Promise<ToolResponse> {
+/**
+ * Retrieves the latest blog post from the personal blog.
+ *
+ * This tool integrates with the blog's RSS feed to fetch the most recent post.
+ * It provides a clean interface for accessing blog content through the MCP server,
+ * handling RSS parsing and data transformation automatically.
+ *
+ * @returns Promise<CallToolResult> - JSON response containing blog post details or error
+ */
+export async function getLatestBlogPost(): Promise<CallToolResult> {
   try {
-    const post = await blogService.getLatestPost();
+    const post = await fetchLatestBlogPost();
 
     if (!post) {
       return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify({
-              error: 'No blog posts found.',
-            }),
-          },
-        ],
+        content: [{ type: 'text', text: JSON.stringify({ error: 'No blog posts found' }) }],
       };
     }
 
@@ -94,9 +98,7 @@ export async function getLatestBlogPost(): Promise<ToolResponse> {
       content: [
         {
           type: 'text',
-          text: JSON.stringify({
-            error: 'Sorry, I encountered an error while trying to fetch your latest blog post.',
-          }),
+          text: JSON.stringify({ error: 'Failed to fetch blog post' }),
         },
       ],
     };

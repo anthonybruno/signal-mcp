@@ -1,191 +1,162 @@
-#!/usr/bin/env node
+/* eslint-disable no-process-env */
 
+import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
-import cors from 'cors';
-import { logger } from '@/utils/logger';
-import { getCurrentSpotifyTrack } from '@/tools/spotify';
-import { getGitHubActivity } from '@/tools/github';
-import { getLatestBlogPost } from '@/tools/blog';
-import { getProjectInfo } from '@/tools/projectInfo';
 
-// Load environment variables from .env file
+import { getEnv } from '@/config/env';
+import { handlers, tools } from '@/tools/definitions';
+import { logger } from '@/utils/logger';
+
 dotenv.config();
+const env = getEnv();
 
 const app = express();
-const PORT = 3001;
-
-logger.info('Starting MCP HTTP server', {
-  name: 'signal-mcp-server',
-  version: '1.0.0',
-  environment: 'production',
-  port: PORT,
-});
-
-// Middleware
-app.use(
-  cors({
-    origin: '*',
-    methods: ['GET', 'POST', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-  }),
-);
-
+app.use(cors({ origin: '*' }));
 app.use(express.json({ limit: '10mb' }));
 
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    transport: 'http',
-    timestamp: new Date().toISOString(),
-    name: 'signal-mcp-server',
-    version: '1.0.0',
-  });
-});
+/**
+ * MCP HTTP Server - For Production Deployment
+ *
+ * This server runs as an HTTP API for production deployment.
+ * It provides the same tools as the stdio server but exposes them
+ * via HTTP endpoints for web integration and remote access.
+ *
+ */
 
-// Root endpoint
-app.get('/', (req, res) => {
+/**
+ * Handles MCP server initialization requests.
+ * Returns server capabilities and protocol information.
+ */
+const handleInitialize = (id: string, res: express.Response) => {
   res.json({
-    name: 'Signal MCP',
-    version: '1.0.0',
-    transport: 'http',
-    endpoints: {
-      health: '/health',
-      mcp: '/mcp',
+    jsonrpc: '2.0',
+    id,
+    result: {
+      protocolVersion: '2024-11-05',
+      capabilities: { tools: {} },
+      serverInfo: { name: 'signal-mcp-server', version: '1.0.0' },
     },
   });
-});
+};
 
-// MCP protocol endpoint
-app.post('/mcp', async (req, res) => {
+/**
+ * Handles tool listing requests.
+ * Returns the list of available tools with their schemas.
+ */
+const handleToolsList = (id: string, res: express.Response) => {
+  res.json({ jsonrpc: '2.0', id, result: { tools } });
+};
+
+/**
+ * Handles tool execution requests.
+ * Dynamically calls the appropriate tool function based on the tool name.
+ *
+ * @param id - The JSON-RPC request ID
+ * @param name - The name of the tool to execute
+ * @param res - Express response object
+ */
+const handleToolCall = async (id: string, name: string, res: express.Response) => {
+  logger.info('Tool execution requested', { toolName: name });
+
   try {
-    const request = req.body;
-    logger.debug('Received MCP request', { method: request.method, id: request.id });
-
-    let response;
-
-    switch (request.method) {
-      case 'initialize': {
-        response = {
-          jsonrpc: '2.0',
-          id: request.id,
-          result: {
-            protocolVersion: '2024-11-05',
-            capabilities: {
-              tools: {},
-            },
-            serverInfo: {
-              name: 'signal-mcp-server',
-              version: '1.0.0',
-            },
-          },
-        };
-        break;
-      }
-
-      case 'tools/list': {
-        response = {
-          jsonrpc: '2.0',
-          id: request.id,
-          result: {
-            tools: [
-              {
-                name: 'get_current_spotify_track',
-                description: "Get the currently playing track from Anthony Bruno's Spotify account",
-                inputSchema: { type: 'object', properties: {}, required: [] },
-              },
-              {
-                name: 'get_github_activity',
-                description: 'Get recent GitHub activity and profile information',
-                inputSchema: { type: 'object', properties: {}, required: [] },
-              },
-              {
-                name: 'get_latest_blog_post',
-                description: "Get the latest blog post from Anthony Bruno's blog",
-                inputSchema: { type: 'object', properties: {}, required: [] },
-              },
-              {
-                name: 'get_project_info',
-                description: 'Get information about this project',
-                inputSchema: { type: 'object', properties: {}, required: [] },
-              },
-            ],
-          },
-        };
-        break;
-      }
-
-      case 'tools/call': {
-        const { name, arguments: args } = request.params;
-        logger.info('Tool called', { name, args });
-
-        let toolResult;
-        switch (name) {
-          case 'get_current_spotify_track':
-            toolResult = await getCurrentSpotifyTrack();
-            break;
-          case 'get_github_activity':
-            toolResult = await getGitHubActivity();
-            break;
-          case 'get_latest_blog_post':
-            toolResult = await getLatestBlogPost();
-            break;
-          case 'get_project_info':
-            toolResult = await getProjectInfo();
-            break;
-          default:
-            throw new Error(`Unknown tool: ${name}`);
-        }
-
-        response = {
-          jsonrpc: '2.0',
-          id: request.id,
-          result: toolResult,
-        };
-        break;
-      }
-
-      default:
-        throw new Error(`Unsupported MCP method: ${request.method}`);
+    if (!(name in handlers)) {
+      logger.error('Unknown tool requested', { toolName: name });
+      res.status(400).json({
+        jsonrpc: '2.0',
+        id,
+        error: { code: -32601, message: `Unknown tool: ${name}` },
+      });
+      return;
     }
 
-    logger.debug('Sending MCP response', { id: response.id, method: request.method });
-    res.json(response);
+    const handler = handlers[name];
+    const result = await handler();
+    logger.info('Tool execution completed', { toolName: name });
+    res.json({ jsonrpc: '2.0', id, result });
   } catch (error) {
-    logger.error('Error processing MCP request:', error);
+    logger.error('Tool execution failed', { toolName: name, error });
     res.status(500).json({
       jsonrpc: '2.0',
-      id: req.body.id ?? null,
-      error: {
-        code: -32603,
-        message: 'Internal error',
-        data: error instanceof Error ? error.message : 'Unknown error',
-      },
+      id,
+      error: { code: -32603, message: 'Tool execution failed' },
     });
   }
-});
+};
 
-// Start the server
-const server = app.listen(PORT, () => {
-  logger.info(`MCP HTTP server running on port ${PORT}`);
-});
-
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  logger.info('SIGTERM received, shutting down gracefully');
-  server.close(() => {
-    logger.info('Server terminated');
-    process.exit(0);
+/**
+ * Handles unsupported MCP method requests.
+ * Returns a JSON-RPC error response.
+ */
+const handleUnsupportedMethod = (id: string, method: string, res: express.Response) => {
+  res.status(400).json({
+    jsonrpc: '2.0',
+    id,
+    error: { code: -32601, message: `Unsupported method: ${method}` },
   });
+};
+
+app.get('/health', (_req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-process.on('SIGINT', () => {
-  logger.info('SIGINT received, shutting down gracefully');
-  server.close(() => {
-    logger.info('Server terminated');
-    process.exit(0);
-  });
+/**
+ * Main MCP endpoint that handles all JSON-RPC requests.
+ * Supports initialization, tool listing, and tool execution.
+ *
+ * Expected request body: { method, id, params? }
+ * - method: 'initialize' | 'tools/list' | 'tools/call'
+ * - id: JSON-RPC request ID
+ * - params: Optional parameters (required for 'tools/call')
+ */
+app.post('/mcp', (req, res) => {
+  const { method, id, params } = req.body as {
+    method: string;
+    id: string;
+    params?: { name: string };
+  };
+
+  const handleRequest = async () => {
+    try {
+      if (method === 'initialize') {
+        handleInitialize(id, res);
+        return;
+      }
+
+      if (method === 'tools/list') {
+        handleToolsList(id, res);
+        return;
+      }
+
+      if (method === 'tools/call') {
+        if (!params?.name) {
+          res.status(400).json({
+            jsonrpc: '2.0',
+            id,
+            error: { code: -32602, message: 'Missing tool name in params' },
+          });
+          return;
+        }
+        await handleToolCall(id, params.name, res);
+        return;
+      }
+
+      handleUnsupportedMethod(id, method, res);
+    } catch (error) {
+      logger.error('MCP request failed:', error);
+      res.status(500).json({
+        jsonrpc: '2.0',
+        id,
+        error: { code: -32603, message: 'Internal error' },
+      });
+    }
+  };
+
+  void handleRequest();
 });
 
-export default app;
+app.listen(env.PORT, () => {
+  logger.info('Server started successfully', { port: env.PORT });
+});
+
+export { app };

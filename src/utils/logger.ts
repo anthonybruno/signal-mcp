@@ -1,9 +1,10 @@
 import winston from 'winston';
 
-const logLevel = process.env['LOG_LEVEL'] ?? 'info';
+import { getEnv } from '@/config/env';
 
+const env = getEnv();
 const logger = winston.createLogger({
-  level: logLevel,
+  level: env.LOG_LEVEL,
   format: winston.format.combine(
     winston.format.timestamp(),
     winston.format.errors({ stack: true }),
