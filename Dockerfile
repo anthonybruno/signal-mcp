@@ -44,4 +44,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3001/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
 
 # Run TypeScript directly with tsx
-CMD ["npx", "tsx", "src/http.ts"]
+CMD ["npx", "tsx", "--tsconfig", "tsconfig.json", "src/http.ts"]
