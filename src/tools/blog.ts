@@ -2,7 +2,7 @@ import Parser from 'rss-parser';
 
 import { logger } from '@/utils/logger';
 
-import type { CallToolResult } from '@modelcontextprotocol/sdk/types';
+import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 
 interface BlogPost {
   title: string;
@@ -76,7 +76,12 @@ export async function getLatestBlogPost(): Promise<CallToolResult> {
 
     if (!post) {
       return {
-        content: [{ type: 'text', text: JSON.stringify({ error: 'No blog posts found' }) }],
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({ error: 'No blog posts found' }),
+          },
+        ],
       };
     }
 

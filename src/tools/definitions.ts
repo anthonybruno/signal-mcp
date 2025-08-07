@@ -34,8 +34,14 @@ export const tools: Tool[] = [
     'get_current_spotify_track',
     "Get the currently playing track from Anthony's Spotify account",
   ),
-  createTool('get_github_activity', 'Get recent GitHub activity and profile information'),
-  createTool('get_latest_blog_post', "Get the latest blog post from Anthony's blog"),
+  createTool(
+    'get_github_activity',
+    'Get recent GitHub activity and profile information',
+  ),
+  createTool(
+    'get_latest_blog_post',
+    "Get the latest blog post from Anthony's blog",
+  ),
   createTool('get_project_info', 'Get information about this project'),
 ];
 

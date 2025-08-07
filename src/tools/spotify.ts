@@ -51,15 +51,21 @@ export async function getCurrentSpotifyTrack(): Promise<CallToolResult> {
   try {
     const accessToken = await getSpotifyAccessToken();
     const { items: recentTracks } = (
-      await axios.get('https://api.spotify.com/v1/me/player/recently-played?limit=1', {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      })
+      await axios.get(
+        'https://api.spotify.com/v1/me/player/recently-played?limit=1',
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        },
+      )
     ).data;
 
     if (!recentTracks?.length) {
       return {
         content: [
-          { type: 'text', text: JSON.stringify({ error: 'No recent Spotify tracks found' }) },
+          {
+            type: 'text',
+            text: JSON.stringify({ error: 'No recent Spotify tracks found' }),
+          },
         ],
       };
     }
@@ -68,7 +74,9 @@ export async function getCurrentSpotifyTrack(): Promise<CallToolResult> {
     const { track } = mostRecentTrack;
     const spotifyTrack: SpotifyTrack = {
       name: track.name,
-      artists: track.artists.map((artist: { name: string }) => ({ name: artist.name })),
+      artists: track.artists.map((artist: { name: string }) => ({
+        name: artist.name,
+      })),
       album: { name: track.album.name },
       external_urls: { spotify: track.external_urls.spotify },
       played_at: mostRecentTrack.played_at,
@@ -78,7 +86,12 @@ export async function getCurrentSpotifyTrack(): Promise<CallToolResult> {
   } catch (error) {
     logger.error('Failed to fetch Spotify track:', error);
     return {
-      content: [{ type: 'text', text: JSON.stringify({ error: 'Failed to get Spotify track' }) }],
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify({ error: 'Failed to get Spotify track' }),
+        },
+      ],
     };
   }
 }

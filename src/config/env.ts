@@ -8,7 +8,9 @@ const envSchema = z.object({
 
   MCP_SERVER_NAME: z.string().min(1),
   MCP_SERVER_VERSION: z.string().min(1),
-  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  NODE_ENV: z
+    .enum(['development', 'production', 'test'])
+    .default('development'),
 
   PORT: z
     .string()

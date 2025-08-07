@@ -30,7 +30,10 @@ function createHeaders() {
     throw new Error('GH_TOKEN environment variable is required');
   }
 
-  logger.debug('Using GitHub token (first 10 chars):', `${ghToken.substring(0, 10)}...`);
+  logger.debug(
+    'Using GitHub token (first 10 chars):',
+    `${ghToken.substring(0, 10)}...`,
+  );
 
   return {
     Authorization: `token ${ghToken}`,
@@ -57,7 +60,9 @@ const GITHUB_QUERY = `
   }
 `;
 
-function transformPinnedItems(nodes: (PinnedItem | null)[]): GitHubRepository[] {
+function transformPinnedItems(
+  nodes: (PinnedItem | null)[],
+): GitHubRepository[] {
   return nodes
     .filter((node): node is PinnedItem => node !== null)
     .map((repo) => ({
@@ -81,7 +86,10 @@ async function fetchGitHubData() {
       { headers: createHeaders() },
     );
 
-    logger.debug('GitHub API response:', { status: response.status, data: response.data });
+    logger.debug('GitHub API response:', {
+      status: response.status,
+      data: response.data,
+    });
 
     const userData = response.data.data?.user;
     if (!userData) {
@@ -95,7 +103,8 @@ async function fetchGitHubData() {
         html_url: 'https://github.com/anthonybruno',
       },
       repos: transformPinnedItems(userData.pinnedItems.nodes),
-      contributions: userData.contributionsCollection?.totalCommitContributions || 0,
+      contributions:
+        userData.contributionsCollection?.totalCommitContributions || 0,
     };
   } catch (error) {
     if (axios.isAxiosError(error)) {

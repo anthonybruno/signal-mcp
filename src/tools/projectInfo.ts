@@ -1,4 +1,4 @@
-import type { CallToolResult } from '@modelcontextprotocol/sdk/types';
+import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 type ToolResponse = CallToolResult;
 
 export function getProjectInfo(): Promise<ToolResponse> {
