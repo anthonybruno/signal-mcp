@@ -104,3 +104,6 @@ npm run spotify:auth  # Spotify authentication setup
 This server demonstrates external integration handling, third-party API usage, and
 protocol-compliant response formatting. As part of a broader portfolio, it highlights full-stack
 orchestration and system design.
+
+- **Additional Info**: [Signal Repo](https://github.com/anthonybruno/signal)
+- **Live Site**: [signal.abruno.net](https://signal.abruno.net)
