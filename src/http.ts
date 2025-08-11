@@ -1,5 +1,3 @@
-/* eslint-disable no-process-env */
-
 import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
@@ -9,7 +7,7 @@ import { handlers, tools } from '@/tools/definitions';
 import { logger } from '@/utils/logger';
 
 dotenv.config();
-const env = getEnv();
+const environmentConfig = getEnv();
 
 const app = express();
 app.use(cors({ origin: '*' }));
@@ -56,7 +54,11 @@ const handleToolsList = (id: string, res: express.Response) => {
  * @param name - The name of the tool to execute
  * @param res - Express response object
  */
-const handleToolCall = async (id: string, name: string, res: express.Response) => {
+const handleToolCall = async (
+  id: string,
+  name: string,
+  res: express.Response,
+) => {
   logger.info('Tool execution requested', { toolName: name });
 
   try {
@@ -88,7 +90,11 @@ const handleToolCall = async (id: string, name: string, res: express.Response) =
  * Handles unsupported MCP method requests.
  * Returns a JSON-RPC error response.
  */
-const handleUnsupportedMethod = (id: string, method: string, res: express.Response) => {
+const handleUnsupportedMethod = (
+  id: string,
+  method: string,
+  res: express.Response,
+) => {
   res.status(400).json({
     jsonrpc: '2.0',
     id,
@@ -155,8 +161,8 @@ app.post('/mcp', (req, res) => {
   void handleRequest();
 });
 
-app.listen(env.PORT, () => {
-  logger.info('Server started successfully', { port: env.PORT });
+app.listen(environmentConfig.PORT, () => {
+  logger.info('Server started successfully', { port: environmentConfig.PORT });
 });
 
 export { app };

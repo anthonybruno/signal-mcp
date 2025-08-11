@@ -20,7 +20,7 @@ interface SpotifyTrack {
  * @returns Promise<string> - The fresh access token
  * @throws Error if token refresh fails
  */
-async function getSpotifyAccessToken(): Promise<string> {
+async function retrieveSpotifyAccessToken(): Promise<string> {
   const env = getEnv();
   const tokenResponse = await axios.post(
     'https://accounts.spotify.com/api/token',
@@ -49,7 +49,7 @@ async function getSpotifyAccessToken(): Promise<string> {
  */
 export async function getCurrentSpotifyTrack(): Promise<CallToolResult> {
   try {
-    const accessToken = await getSpotifyAccessToken();
+    const accessToken = await retrieveSpotifyAccessToken();
     const { items: recentTracks } = (
       await axios.get(
         'https://api.spotify.com/v1/me/player/recently-played?limit=1',

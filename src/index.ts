@@ -1,12 +1,12 @@
-import dotenv from 'dotenv';
-dotenv.config();
-
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import dotenv from 'dotenv';
 
 import { getEnv } from '@/config/env';
 import { registerTools } from '@/tools/index';
 import { logger } from '@/utils/logger';
+
+dotenv.config();
 
 /**
  * MCP Stdio Server - For Local Development
@@ -21,12 +21,12 @@ import { logger } from '@/utils/logger';
  */
 async function main() {
   try {
-    const env = getEnv();
+    const environmentConfig = getEnv();
 
-    const mcpServer = new Server(
+    const serverInstance = new Server(
       {
-        name: env.MCP_SERVER_NAME,
-        version: env.MCP_SERVER_VERSION,
+        name: environmentConfig.MCP_SERVER_NAME,
+        version: environmentConfig.MCP_SERVER_VERSION,
       },
       {
         capabilities: {
@@ -35,14 +35,14 @@ async function main() {
       },
     );
 
-    registerTools(mcpServer);
+    registerTools(serverInstance);
 
-    mcpServer.onerror = (error) => {
+    serverInstance.onerror = (error) => {
       logger.error('MCP server error:', error);
     };
 
     const transport = new StdioServerTransport();
-    await mcpServer.connect(transport);
+    await serverInstance.connect(transport);
 
     // Graceful shutdown
     const shutdown = () => process.exit(0);

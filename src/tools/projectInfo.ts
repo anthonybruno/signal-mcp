@@ -1,7 +1,7 @@
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
-type ToolResponse = CallToolResult;
+type ProjectInfoResponse = CallToolResult;
 
-export function getProjectInfo(): Promise<ToolResponse> {
+export function getProjectInfo(): Promise<ProjectInfoResponse> {
   return Promise.resolve({
     content: [
       {
@@ -9,7 +9,7 @@ export function getProjectInfo(): Promise<ToolResponse> {
         text: JSON.stringify({
           name: 'Signal - AI Portfolio Chatbot',
           description:
-            'Signal is an AI-powered portfolio chatbot that showcases my ability to architect, lead, and deliver modern, production-grade systems. It drives personalized, context-aware conversations by combining live data integrations, advanced AI, and a robust RAG and MCP backend.\n\nBuilt for clarity, scale, and real-world use, TonyBot reflects my commitment to secure, maintainable software and the leadership mindset I bring to every team I support.',
+            'Signal is an AI-powered portfolio chatbot that showcases my ability to architect, lead, and deliver modern, production-grade systems. It drives personalized, context-aware conversations by combining live data integrations, advanced AI, and a robust RAG and MCP backend.\n\nBuilt for clarity, scale, and real-world use, Signal reflects my commitment to secure, maintainable software and the leadership mindset I bring to every team I support.',
           technologies: [
             '**Frontend:** Next.js with React for the chat interface, styled with Tailwind and written in TypeScript',
             '**Backend:** Express.js with ChromaDB for Retrieval-Augmented Generation (RAG) using OpenAI embeddings and semantic search',

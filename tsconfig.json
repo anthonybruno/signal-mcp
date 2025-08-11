@@ -3,12 +3,12 @@
   "compilerOptions": {
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "rootDir": "./src",
+    "rootDir": ".",
     "baseUrl": "./src",
     "paths": {
       "@/*": ["*"]
     }
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "scripts/**/*"],
   "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"]
 }

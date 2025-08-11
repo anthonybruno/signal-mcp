@@ -10,7 +10,7 @@ interface BlogPost {
   publishedAt: string;
 }
 
-const RSS_URL = 'https://eastsycamore.com/rss.xml';
+const BLOG_RSS_FEED_URL = 'https://eastsycamore.com/rss.xml';
 
 const parser = new Parser({
   customFields: {
@@ -31,10 +31,10 @@ const parser = new Parser({
  * @returns Promise<BlogPost | null> - The latest blog post or null if none found
  * @throws Error if RSS feed cannot be fetched or parsed
  */
-async function fetchLatestBlogPost(): Promise<BlogPost | null> {
+async function retrieveLatestBlogPost(): Promise<BlogPost | null> {
   try {
-    logger.debug('Fetching latest blog post', { url: RSS_URL });
-    const feed = await parser.parseURL(RSS_URL);
+    logger.debug('Fetching latest blog post', { url: BLOG_RSS_FEED_URL });
+    const feed = await parser.parseURL(BLOG_RSS_FEED_URL);
 
     if (!feed.items.length) {
       logger.warn('No blog posts found in RSS feed');
@@ -72,7 +72,7 @@ async function fetchLatestBlogPost(): Promise<BlogPost | null> {
  */
 export async function getLatestBlogPost(): Promise<CallToolResult> {
   try {
-    const post = await fetchLatestBlogPost();
+    const post = await retrieveLatestBlogPost();
 
     if (!post) {
       return {

@@ -19,33 +19,36 @@ export interface ToolHandler {
   (): Promise<CallToolResult>;
 }
 
-export interface ToolHandlers {
+export interface ToolHandlerRegistry {
   [key: string]: ToolHandler;
 }
 
-const createTool = (name: string, description: string): Tool => ({
+const createToolDefinition = (name: string, description: string): Tool => ({
   name,
   description,
   inputSchema: { type: 'object', properties: {}, required: [] },
 });
 
 export const tools: Tool[] = [
-  createTool(
+  createToolDefinition(
     'get_current_spotify_track',
     "Get the currently playing track from Anthony's Spotify account",
   ),
-  createTool(
+  createToolDefinition(
     'get_github_activity',
     'Get recent GitHub activity and profile information',
   ),
-  createTool(
+  createToolDefinition(
     'get_latest_blog_post',
     "Get the latest blog post from Anthony's blog",
   ),
-  createTool('get_project_info', 'Get information about this project'),
+  createToolDefinition(
+    'get_project_info',
+    'Get information about this project',
+  ),
 ];
 
-export const handlers: ToolHandlers = {
+export const handlers: ToolHandlerRegistry = {
   get_current_spotify_track: getCurrentSpotifyTrack,
   get_github_activity: getGitHubActivity,
   get_latest_blog_post: getLatestBlogPost,

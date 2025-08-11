@@ -22,26 +22,26 @@ interface PinnedItem {
   url: string;
 }
 
-function createHeaders() {
+function createGitHubHeaders() {
   // eslint-disable-next-line no-process-env
-  const ghToken = process.env.GH_TOKEN;
-  if (!ghToken) {
+  const githubToken = process.env.GH_TOKEN;
+  if (!githubToken) {
     logger.error('GH_TOKEN environment variable is not set');
     throw new Error('GH_TOKEN environment variable is required');
   }
 
   logger.debug(
     'Using GitHub token (first 10 chars):',
-    `${ghToken.substring(0, 10)}...`,
+    `${githubToken.substring(0, 10)}...`,
   );
 
   return {
-    Authorization: `token ${ghToken}`,
+    Authorization: `token ${githubToken}`,
     'Content-Type': 'application/json',
   };
 }
 
-const GITHUB_QUERY = `
+const GITHUB_GRAPHQL_QUERY = `
   query {
     user(login: "anthonybruno") {
       contributionsCollection {
@@ -78,12 +78,12 @@ function transformPinnedItems(
     }));
 }
 
-async function fetchGitHubData() {
+async function retrieveGitHubData() {
   try {
     const response = await axios.post(
       'https://api.github.com/graphql',
-      { query: GITHUB_QUERY },
-      { headers: createHeaders() },
+      { query: GITHUB_GRAPHQL_QUERY },
+      { headers: createGitHubHeaders() },
     );
 
     logger.debug('GitHub API response:', {
@@ -126,7 +126,7 @@ async function fetchGitHubData() {
  */
 export async function getGitHubActivity(): Promise<CallToolResult> {
   try {
-    const { user, repos, contributions } = await fetchGitHubData();
+    const { user, repos, contributions } = await retrieveGitHubData();
 
     return {
       content: [
