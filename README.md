@@ -90,12 +90,15 @@ npm run dev
 ## Development Workflow
 
 ```bash
+npm run dev           # Start MCP server (tsx)
 npm run dev:http      # Start HTTP server (tsx)
+npm run start         # Start MCP server (tsx)
 npm run start:http    # Start HTTP server (tsx)
 npm run type-check    # Type-check TypeScript (no emit)
 npm run lint          # Run ESLint
 npm run lint:fix      # Fix linting issues
 npm run format        # Format code with Prettier
+npm run format:check  # Check code formatting
 npm run spotify:auth  # Spotify authentication setup
 ```
 
