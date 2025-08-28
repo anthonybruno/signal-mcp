@@ -6,20 +6,27 @@ export function getProjectInfo(): Promise<ProjectInfoResponse> {
     content: [
       {
         type: 'text',
-        text: JSON.stringify({
-          name: 'Signal - AI Portfolio Chatbot',
-          description:
-            'Signal is an AI-powered portfolio chatbot that showcases my ability to architect, lead, and deliver modern, production-grade systems. It drives personalized, context-aware conversations by combining live data integrations, advanced AI, and a robust RAG and MCP backend.\n\nBuilt for clarity, scale, and real-world use, Signal reflects my commitment to secure, maintainable software and the leadership mindset I bring to every team I support.',
-          technologies: [
-            '**Frontend:** Next.js with React for the chat interface, styled with Tailwind and written in TypeScript',
-            '**Backend:** Express.js with ChromaDB for Retrieval-Augmented Generation (RAG) using OpenAI embeddings and semantic search',
-            '**LLM Routing:** OpenRouter for dynamic model orchestration across providers like Gemini, GPT, and Claude',
-            '**Live Tools (MCP):** Model Context Protocol server with custom tools for real-time data from Spotify, GitHub, and RSS feeds',
-            '**Production Infrastructure:** Winston for logging, Helmet for security, and express-rate-limit for basic rate limiting',
-            '**Containerization:** Dockerized frontend, backend, and vector store components for local development and deployability',
-          ],
-          url: 'https://github.com/example/ipsumbot',
-        }),
+        text: `# Signal – An Interactive AI Portfolio
+
+Signal is a conversational portfolio designed to show how I build, structure, and ship modern engineering systems. Instead of a static page, it lets you explore my work, leadership, and background through dialogue.
+
+Behind the scenes, Signal isn't just a demo — it's a real, production-grade system that brings together multiple services, shared configuration, and modern AI patterns. It demonstrates both my technical depth and my focus on clarity, maintainability, and team enablement.
+
+## Key highlights
+• Interactive frontend built with Next.js, React, and Tailwind — creating a polished, accessible chat interface.
+• Backend services powered by Express and ChromaDB for Retrieval-Augmented Generation (RAG), enabling context-aware responses.
+• LLM routing through OpenRouter, orchestrating models like GPT, Claude, and Gemini for the right balance of cost, speed, and accuracy.
+• Live integrations with GitHub, Spotify, and blog content via a Model Context Protocol (MCP) server, showing how AI systems can blend static knowledge with live data.
+• Production-grade practices including structured logging (Winston), security middleware (Helmet), and rate limiting.
+• Portable architecture with Dockerized services for easy development and deployment.
+
+## Why it matters
+Signal is both portfolio and proof point:
+• It demonstrates my frontend expertise in creating clean, usable interfaces.
+• It reflects my engineering management mindset by showing clear boundaries, shared standards, and strong documentation.
+• And it highlights my ability to evaluate and integrate emerging technologies in a way that's practical and future-looking.
+
+[View on GitHub](https://github.com/anthonybruno/signal)`,
       },
     ],
   });
