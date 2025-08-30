@@ -1,112 +1,60 @@
 # Signal MCP
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![MCP](https://img.shields.io/badge/MCP-Protocol-blue.svg)](https://modelcontextprotocol.io)
-[![Spotify API](https://img.shields.io/badge/Spotify-API-1DB954?logo=spotify&logoColor=white)](https://developer.spotify.com/)
+![Model Context Protocol](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-000?logo=modelcontextprotocol&logoColor=white&style=flat-square)
 
-MCP-compatible server for [Signal’s](https://github.com/anthonybruno/signal) live GitHub, Spotify,
-and blog integrations.
+### Static portfolios are boring.
+
+The Model Context Protocol (MCP) server powers Signal’s live integrations. It connects the system to
+GitHub activity, Spotify listening history, and blog content, providing real-time data that makes
+the portfolio feel alive.
 
 ## What it does
 
-This server handles live integrations between Signal and third-party platforms like GitHub, Spotify,
-and a personal blog. Built on the [Model Context Protocol (MCP)](https://modelcontextprotocol.io),
-it listens for MCP actions from the LLM and executes them via secure, scoped API calls. It’s
-designed to demonstrate real-time interaction patterns between an AI layer and external data sources
-using well-defined action schemas.
+The MCP server is a lightweight Express service that:
 
-**Key Features:**
+- Handles **GitHub activity integration**
+- Connects to Spotify for “Now Playing” and recent history
+- Converts blog RSS feeds into consumable JSON
+- Exposes **MCP-compliant endpoints** so the backend can call tools through OpenRouter
 
-- GitHub activity integration
-- Spotify "Now Playing" and recent history
-- Blog RSS-to-JSON conversion and feed updates
-- MCP-compliant message formatting
+It doesn’t interact with models directly. Instead, it responds when the backend orchestrates a tool
+call, returning structured data that can be streamed back into the conversation.
 
-## Usage Examples
+---
 
-### Basic Usage
+## Architecture overview
 
-```bash
-# Example: Get current Spotify track
-curl -X POST http://localhost:3000 \
-  -H "Content-Type: application/json" \
-  -d '{
-    "jsonrpc": "2.0",
-    "id": 3,
-    "method": "tools/call",
-    "params": {
-      "name": "get_current_spotify_track",
-      "arguments": {}
-    }
-  }'
+![Signal Architecture](https://github.com/user-attachments/assets/9ae777bb-9564-4168-8e72-9ffbc743ae5c)
 
-# Response:
-{
-  "jsonrpc": "2.0",
-  "id": 3,
-  "result": {
-    "result": {
-		"content": [
-			{
-				"type": "text",
-				"text": "{\"name\":\"Stranger In A Strange Land\",\"artists\":[{\"name\":\"Leon Russell\"}],\"album\":{\"name\":\"Leon Russell And The Shelter People (Expanded Edition)\"},\"external_urls\":{\"spotify\":\"https://open.spotify.com/track/1C8VMfbSqTK6wXrmZ1MNkA\"},\"played_at\":\"2025-08-07T20:45:03.204Z\"}"
-			}
-		]
-	}
-  }
-}
-```
+The MCP server acts as Signal’s live data provider, bridging the system to external APIs.
 
-## Local Development
+## Tech stack
 
-### Prerequisites
+- **Runtime:** Node.js
+- **Framework:** Express
+- **Protocol:** Model Context Protocol (MCP) SDK
+- **Integrations:** GitHub REST API, Spotify Web API, Blog RSS feed
+- **Dev tooling:** ESLint, Prettier, Husky, and shared configs via
+  [dev-config](https://www.npmjs.com/package/abruno-dev-config)
 
-- Node.js 20+
+## Local development
 
-### Setup
+Signal’s services can be run locally, but setup involves multiple moving parts.  
+For now, the easiest way to explore Signal is the [live demo](https://signal.abruno.net).
 
-```bash
-npm install
-cp .env.example .env
-npm run dev
-```
+Future work may include a simplified `docker-compose` flow for local development.
 
-- **URL**: http://localhost:3000
-- **Health Check**: `GET /health`
+## Explore
 
-## Tech Stack
+- [Overview repo](https://github.com/anthonybruno/signal)
+- [Backend repo](https://github.com/anthonybruno/signal-backend)
+- [Frontend repo](https://github.com/anthonybruno/signal-frontend)
+- [RAG repo](https://github.com/anthonybruno/signal-rag)
+- [Live demo](https://signal.abruno.net)
 
-- Node.js + TypeScript
-- Express
-- MCP SDK
-- OpenRouter-compatible integration formatting
+## Signal context
 
-## Architecture Notes
-
-- Exposes a single MCP-compatible endpoint for use by the Signal frontend
-- Acts as a passive provider: no LLM interaction, just data enrichment
-- Lightweight Express server built for streaming JSON payloads
-
-## Development Workflow
-
-```bash
-npm run dev           # Start MCP server (tsx)
-npm run dev:http      # Start HTTP server (tsx)
-npm run start         # Start MCP server (tsx)
-npm run start:http    # Start HTTP server (tsx)
-npm run type-check    # Type-check TypeScript (no emit)
-npm run lint          # Run ESLint
-npm run lint:fix      # Fix linting issues
-npm run format        # Format code with Prettier
-npm run format:check  # Check code formatting
-npm run spotify:auth  # Spotify authentication setup
-```
-
-## Signal Context
-
-This server demonstrates external integration handling, third-party API usage, and
-protocol-compliant response formatting. As part of a broader portfolio, it highlights full-stack
-orchestration and system design.
-
-- **Additional Info**: [Signal Repo](https://github.com/anthonybruno/signal)
-- **Live Site**: [signal.abruno.net](https://signal.abruno.net)
+The MCP server reflects how I approach **integration boundaries and system interoperability**. By
+isolating third-party APIs behind a single protocol-compliant service, the architecture stays
+modular and secure. This design makes it easier for teams to extend or swap integrations without
+affecting the rest of the system. This is a principle I carry into larger engineering projects.

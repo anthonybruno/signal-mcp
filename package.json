@@ -1,21 +1,27 @@
 {
   "name": "signal-mcp-server",
   "version": "1.1.0",
-  "description": "MCP-compatible server for Signal's live GitHub, Spotify, and blog integrations.",
-  "type": "module",
-  "main": "src/index.ts",
-  "author": "Anthony Bruno",
-  "license": "MIT",
-  "repository": "https://github.com/anthonybruno/signal-mcp.git",
+  "description": "The Signal MCP server provides Model Context Protocol-compliant endpoints for GitHub, Spotify, and blog data, enabling live tool-calling during backend orchestration.",
   "keywords": [
+    "portfolio",
     "mcp",
     "model-context-protocol",
-    "ai",
-    "chatbot",
-    "spotify",
+    "integrations",
     "github",
-    "rss"
+    "spotify",
+    "rss",
+    "api",
+    "nodejs",
+    "signal"
   ],
+  "author": "Anthony Bruno",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthonybruno/signal-mcp.git"
+  },
+  "type": "module",
+  "main": "src/index.ts",
   "scripts": {
     "dev": "tsx src/index.ts",
     "dev:http": "tsx src/http.ts",
@@ -41,21 +47,21 @@
     "zod": "^3.25.67"
   },
   "devDependencies": {
+    "@commitlint/config-conventional": "^19.8.1",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^11.0.3",
     "@types/cors": "^2.8.17",
     "@types/date-fns": "^2.5.3",
     "@types/express": "^4.17.21",
     "@types/node": "^20.0.0",
+    "commitlint": "^19.8.1",
     "eslint": "^9.32.0",
     "eslint-plugin-node": "^11.1.0",
-    "prettier": "^3.0.0",
-    "tsx": "^4.20.3",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.4",
-    "commitlint": "^19.8.1",
-    "@commitlint/config-conventional": "^19.8.1",
+    "prettier": "^3.0.0",
     "semantic-release": "^24.2.7",
-    "@semantic-release/git": "^10.0.1",
-    "@semantic-release/github": "^11.0.3"
+    "tsx": "^4.20.3"
   },
   "lint-staged": {
     "src/**/*.ts": [
