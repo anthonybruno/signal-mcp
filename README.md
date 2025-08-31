@@ -20,8 +20,6 @@ The MCP server is a lightweight Express service that:
 It doesn’t interact with models directly. Instead, it responds when the backend orchestrates a tool
 call, returning structured data that can be streamed back into the conversation.
 
----
-
 ## Architecture overview
 
 ![Signal Architecture](https://github.com/user-attachments/assets/9ae777bb-9564-4168-8e72-9ffbc743ae5c)
