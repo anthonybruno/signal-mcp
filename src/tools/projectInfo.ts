@@ -9,7 +9,7 @@ export function getProjectInfo(): Promise<ProjectInfoResponse> {
         text: JSON.stringify({
           name: 'Signal – Because static portfolios are boring',
           description:
-            'Signal is my portfolio (yeah, I still have [a static one too](https://studies.abruno.net)), but built as a conversation instead of a static page. You can ask about my background, leadership style, projects, or even what I’m listening to, and Signal will answer with context pulled from real data.',
+            'Signal is my portfolio (yeah, I still have [a classic one too](https://studies.abruno.net)), but this one is built as a conversation. You can ask about my background, leadership style, projects, or even what I’m listening to, and Signal will answer with context pulled from real data.',
           overview:
             'Behind the scenes, it’s a production-grade system that ties together multiple services and modern AI patterns:',
           keyHighlights: [
