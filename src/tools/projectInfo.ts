@@ -9,22 +9,18 @@ export function getProjectInfo(): Promise<ProjectInfoResponse> {
         text: JSON.stringify({
           name: 'Signal – An Interactive AI Portfolio',
           description:
-            'Signal is a conversational portfolio designed to show how I build, structure, and ship modern engineering systems. Instead of a static page, it lets you explore my work, leadership, and background through dialogue.',
+            'Signal is my portfolio, but built as a conversation instead of a static page. You can ask about my background, leadership style, projects, or even what I’m listening to, and Signal will answer with context pulled from real data.',
           overview:
-            "Behind the scenes, Signal isn't just a demo — it's a real, production-grade system that brings together multiple services, shared configuration, and modern AI patterns. It demonstrates both my technical depth and my focus on clarity, maintainability, and team enablement.",
+            'Behind the scenes, it’s a production-grade system that ties together multiple services and modern AI patterns:',
           keyHighlights: [
-            'Interactive frontend built with Next.js, React, and Tailwind — creating a polished, accessible chat interface.',
-            'Backend services powered by Express and ChromaDB for Retrieval-Augmented Generation (RAG), enabling context-aware responses.',
-            'LLM routing through OpenRouter, orchestrating models like GPT, Claude, and Gemini for the right balance of cost, speed, and accuracy.',
-            'Live integrations with GitHub, Spotify, and blog content via a Model Context Protocol (MCP) server, showing how AI systems can blend static knowledge with live data.',
-            'Production-grade practices including structured logging (Winston), security middleware (Helmet), and rate limiting.',
-            'Portable architecture with Dockerized services for easy development and deployment.',
+            '**Frontend:** Next.js, React, and Tailwind for a polished, accessible chat interface',
+            '**Backend:** Express with ChromaDB for Retrieval-Augmented Generation (RAG), grounding responses in context',
+            '**Model routing:** OpenRouter orchestrating LLM APIs like Gemini for cost, speed, and accuracy',
+            '**Live data:** GitHub, Spotify, and blog integrations through a Model Context Protocol (MCP) server',
+            '**Ops:** Dockerized services with structured logging (Winston), security middleware (Helmet), and rate limiting',
           ],
-          whyItMatters: [
-            'It demonstrates my frontend expertise in creating clean, usable interfaces.',
-            'It reflects my engineering management mindset by showing clear boundaries, shared standards, and strong documentation.',
-            "And it highlights my ability to evaluate and integrate emerging technologies in a way that's practical and future-looking.",
-          ],
+          whyItMatters:
+            'Signal is both portfolio and proof point. It shows my frontend depth, my ability to design clean and maintainable systems, and my approach to leadership through clarity, shared standards, and documentation. It also highlights how I evaluate and integrate emerging technologies in ways that are practical and future-facing.',
           url: 'https://github.com/anthonybruno/signal',
         }),
       },
